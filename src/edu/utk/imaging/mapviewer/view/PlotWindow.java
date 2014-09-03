@@ -87,6 +87,9 @@ public class PlotWindow extends JFrame {
 	private  char anchorChar = 65;
 	private  JFreeChart chart;
 	
+	private XYTextAnnotation anchorlessTextAnnotation;
+	private XYTextAnnotation anchoredTextAnnotation;
+	
 	public PlotWindow() {
 		initComponents();
 	}
@@ -131,7 +134,7 @@ public class PlotWindow extends JFrame {
 		chartPanel = new ChartPanel(chart) {
         	@Override
             public Dimension getPreferredSize() {
-                return new Dimension(800, 400);
+                return new Dimension(600, 600);
             }
         };
         
@@ -228,16 +231,40 @@ public class PlotWindow extends JFrame {
 			}
 			
 			lineScanner = new Scanner(inputReader.readLine());
-			lineScanner = new Scanner(inputReader.readLine());
-			while (lineScanner.hasNextDouble()) {
-				System.out.println("There is a double!");
-				Double x = lineScanner.nextDouble();
-				Double y = lineScanner.nextDouble();
-				Double z = lineScanner.nextDouble();
-				
-				Coordinate coordinate = new Coordinate(x, y, z);
-				addPoint(coordinate);
-				lineScanner = new Scanner(inputReader.readLine());
+			//lineScanner = new Scanner(inputReader.readLine());
+			String currentLine = inputReader.readLine();
+			lineScanner = new Scanner(currentLine);
+			try {
+				while (true) {
+					System.out.println("Current line: " + currentLine);
+					if (lineScanner.hasNextDouble()) {
+						System.out.println("There is a double!");
+						Double x = lineScanner.nextDouble();
+						Double y = lineScanner.nextDouble();
+						Double z = lineScanner.nextDouble();
+						
+						Coordinate coordinate = new Coordinate(x, y, z);
+						addPoint(coordinate);
+					} else {
+						System.out.println("There isn't a double.");
+						System.out.println("Current line: " + currentLine);
+						if (currentLine.equals("AtAnchor")) {
+							currentLine = inputReader.readLine();
+							lineScanner = new Scanner(currentLine);
+							Coordinate coordinate = new Coordinate(lineScanner.nextDouble(), lineScanner.nextDouble(), lineScanner.nextDouble());
+							atAnchorPoint(coordinate);
+						}
+					}
+					System.out.println("Before the lineScanner");
+					currentLine = inputReader.readLine();
+					if (currentLine == null) {
+						break;
+					}
+					lineScanner = new Scanner(currentLine);
+					System.out.println("After the lineScanner");
+				}
+			} catch (IOException e) {
+				System.out.println("At the end");
 			}
 			
 			
@@ -247,7 +274,7 @@ public class PlotWindow extends JFrame {
 				//currentLine = lineScanner.next();
 			//}
 			
-			System.out.println(firstLine);
+			//System.out.println(firstLine);
 		} catch (FileNotFoundException fne) {
 		} catch (IOException ioe) {
 		}
@@ -348,6 +375,12 @@ public class PlotWindow extends JFrame {
         	//plot.getRenderer().setSeriesShape(i, ShapeUtilities.createDiagonalCross(1, 1));
     	}
     	else {
+    		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(0);
+    		if (numPoints >= 2) {
+    			renderer.removeAnnotation(anchoredTextAnnotation);
+    		}
+    		anchoredTextAnnotation = new XYTextAnnotation("(" + (double)Math.round(coordinate.getX() * 1000) / 1000 + ", " + (double)Math.round(coordinate.getY() * 1000) / 1000 + ")" , coordinate.getX() + .1, coordinate.getY()+ .3);
+    		renderer.addAnnotation(anchoredTextAnnotation);
     		final XYSeries newSeries = new XYSeries(i);
     		newSeries.add(lastCoordinate.getX(), lastCoordinate.getY());
     		newSeries.add(coordinate.getX(), coordinate.getY());
@@ -392,6 +425,12 @@ public class PlotWindow extends JFrame {
         	System.out.println("Anchorless dataset series number " + anchorlessXYDataset.getSeriesCount());
     	}
     	else {
+    		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(1);
+    		if (numAnchorlessPoints >= 2) {
+    			renderer.removeAnnotation(anchorlessTextAnnotation);
+    		}
+    		anchorlessTextAnnotation = new XYTextAnnotation("(" + (double)Math.round(coordinate.getX() * 1000) / 1000 + ", " + (double)Math.round(coordinate.getY() * 1000) / 1000 + ")" , coordinate.getX() + .1, coordinate.getY()+ .3);
+    		renderer.addAnnotation(anchorlessTextAnnotation);
     		final XYSeries newSeries = new XYSeries(numAnchorlessPoints);
     		newSeries.add(anchorlessLastCoordinate.getX(), anchorlessLastCoordinate.getY());
     		newSeries.add(coordinate.getX(), coordinate.getY());
@@ -466,7 +505,7 @@ public class PlotWindow extends JFrame {
 	
     private  JFreeChart createChart(final XYDataset dataset) {
         JFreeChart chart = ChartFactory.createXYLineChart(
-            "Map", "X", "Y", dataset,
+            "MapViewer", "X", "Y", dataset,
             PlotOrientation.VERTICAL, false, false, false);
         ChartUtilities.applyCurrentTheme(chart);
         return chart;
