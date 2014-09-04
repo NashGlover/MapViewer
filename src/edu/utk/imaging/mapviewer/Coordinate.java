@@ -4,7 +4,7 @@ public class Coordinate {
     private double x;
     private double y;
     private double z;
-    private long timestamp;
+    private double timestamp;
     
     public Coordinate (double _x, double _y, double _z) {
     	x = _x;
@@ -12,7 +12,7 @@ public class Coordinate {
     	z = _z;
     }
     
-    public Coordinate (double _x, double _y, double _z, long _timestamp) {
+    public Coordinate (double _x, double _y, double _z, double _timestamp) {
         x = _x;
         y = _y;
         z = _z;

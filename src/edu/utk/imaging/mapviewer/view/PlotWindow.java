@@ -201,13 +201,14 @@ public class PlotWindow extends JFrame {
 			System.out.println(firstLine);
 			lineScanner = new Scanner(inputReader.readLine());
 			
+			/* Anchors */
 			while (lineScanner.hasNextDouble()) {
 				int i = 0;
 				//while (i < 3) {
 					Double x = lineScanner.nextDouble();
 					Double y = lineScanner.nextDouble();
 					Double z = lineScanner.nextDouble();
-					
+
 					Coordinate coordinate = new Coordinate(x, y, z);
 					addAnchorPoint(coordinate);
 					
@@ -225,7 +226,14 @@ public class PlotWindow extends JFrame {
 				Double y = lineScanner.nextDouble();
 				Double z = lineScanner.nextDouble();
 				
-				Coordinate coordinate = new Coordinate(x, y, z);
+				Coordinate coordinate;
+				if (lineScanner.hasNextDouble()) {
+					Double timestamp = lineScanner.nextDouble();
+					coordinate = new Coordinate(x, y, z, timestamp);
+				}
+				else {
+					coordinate = new Coordinate(x, y, z);
+				}
 				addAnchorlessPoint(coordinate);
 				lineScanner = new Scanner(inputReader.readLine());
 			}
@@ -234,6 +242,8 @@ public class PlotWindow extends JFrame {
 			//lineScanner = new Scanner(inputReader.readLine());
 			String currentLine = inputReader.readLine();
 			lineScanner = new Scanner(currentLine);
+			
+			/* Anchored */
 			try {
 				while (true) {
 					System.out.println("Current line: " + currentLine);
@@ -243,7 +253,14 @@ public class PlotWindow extends JFrame {
 						Double y = lineScanner.nextDouble();
 						Double z = lineScanner.nextDouble();
 						
-						Coordinate coordinate = new Coordinate(x, y, z);
+						Coordinate coordinate;
+						if (lineScanner.hasNextDouble()) {
+							Double timestamp = lineScanner.nextDouble();
+							coordinate = new Coordinate(x, y, z, timestamp);
+						}
+						else {
+							coordinate = new Coordinate(x, y, z);
+						}
 						addPoint(coordinate);
 					} else {
 						System.out.println("There isn't a double.");
@@ -251,7 +268,20 @@ public class PlotWindow extends JFrame {
 						if (currentLine.equals("AtAnchor")) {
 							currentLine = inputReader.readLine();
 							lineScanner = new Scanner(currentLine);
-							Coordinate coordinate = new Coordinate(lineScanner.nextDouble(), lineScanner.nextDouble(), lineScanner.nextDouble());
+
+							Double x = lineScanner.nextDouble();
+							Double y = lineScanner.nextDouble();
+							Double z = lineScanner.nextDouble();
+							
+							Coordinate coordinate;
+							if (lineScanner.hasNextDouble()) {
+								Double timestamp = lineScanner.nextDouble();
+								coordinate = new Coordinate(x, y, z, timestamp);
+							}
+							else {
+								coordinate = new Coordinate(x, y, z);
+							}
+							
 							atAnchorPoint(coordinate);
 						}
 					}
