@@ -1,12 +1,14 @@
 package edu.utk.imaging.mapviewer.view;
 
-import edu.utk.imaging.mapviewer.Coordinate;
+import edu.utk.imaging.mapviewer.data.Coordinate;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -55,6 +57,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.util.ShapeUtilities;
 
 public class PlotWindow extends JFrame {
+
+	private JPanel mainPanel;
 	
 	private  final Random random = new Random();
 	private  XYSeries series = new XYSeries("Test");
@@ -106,6 +110,7 @@ public class PlotWindow extends JFrame {
 	}
 	
 	private void initComponents() {
+		f = this;
 		JButton loadFileButton = new JButton("Load File...");
 		MouseEvent evt;
 		colorListInit();
@@ -137,6 +142,8 @@ public class PlotWindow extends JFrame {
                 return new Dimension(600, 600);
             }
         };
+        
+        //chartPanel.setMaximumDrawHeight(600);
         
         chartPanel.setPopupMenu(null);
         chartPanel.setMouseZoomable(false);
@@ -186,9 +193,32 @@ public class PlotWindow extends JFrame {
 		Rectangle2D plotArea = chartPanel.getChartRenderingInfo().getPlotInfo().getDataArea();
 		JPanel p = new JPanel();
 		p.add(loadFileButton);
-		add(chartPanel);
+		mainPanel = new JPanel();
+		mainPanel.setBackground(new Color(255, 255, 255));
+		mainPanel.add(chartPanel);
+		add(mainPanel, BorderLayout.CENTER);
 		add(p, BorderLayout.SOUTH);
 		pack();
+		
+		final double bottomPanelHeight = p.getSize().getHeight();
+		
+		addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				Dimension frameSize = f.getContentPane().getSize();
+				double minDimension = Math.min(frameSize.getWidth(), frameSize.getHeight()-bottomPanelHeight);
+				System.out.println(minDimension);
+				resizePanel(minDimension);
+			}
+		});
+		
+	}
+	
+	public void resizePanel(Double minDimension) {
+		Dimension dimension = new Dimension();
+		dimension.setSize(minDimension, minDimension);
+		chartPanel.setSize(dimension);
+		Dimension chartPanelSize = chartPanel.getSize();
+		System.out.println("Height: " + chartPanelSize.getHeight());
 	}
 	
 	private void readFile(File pointFile) {
@@ -514,7 +544,7 @@ public class PlotWindow extends JFrame {
     	renderer.setSeriesShape(i-1, ShapeUtilities.createRegularCross(5, .5f));
     	plot.setRenderer(0, renderer);
     	//plot.addAnnotation(new XYTextAnnotation(new Character((char)(anchorChar+(char)numAnchorPoints)).toString(), coordinate.getX()+.5, coordinate.getY()+.5));
-    	plot.addAnnotation(new XYTextAnnotation(new Character((char)(anchorChar+(char)numAnchorPoints)).toString(), coordinate.getX()+computePixelWidth(10), coordinate.getY()+computePixelHeight(10)));
+    	plot.addAnnotation(new XYTextAnnotation(new Character((char)(anchorChar+(char)numAnchorPoints)).toString(), coordinate.getX()+computePixelWidth(10), -(coordinate.getY()+computePixelHeight(10))));
        	numAnchorPoints++;
     }
     
@@ -535,7 +565,7 @@ public class PlotWindow extends JFrame {
 	
     private  JFreeChart createChart(final XYDataset dataset) {
         JFreeChart chart = ChartFactory.createXYLineChart(
-            "MapViewer", "X", "Y", dataset,
+            null, "X", "Y", dataset,
             PlotOrientation.VERTICAL, false, false, false);
         ChartUtilities.applyCurrentTheme(chart);
         return chart;
