@@ -1,6 +1,7 @@
 package edu.utk.imaging.mapviewer.view;
 
 import edu.utk.imaging.mapviewer.data.Coordinate;
+import edu.utk.imaging.mapviewer.data.TrialData;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -78,6 +79,8 @@ public class PlotWindow extends JFrame {
 	private Stack<Double> zoomOutStack;
 	private  ArrayList<Color> colorList;
 	private JFrame f;
+	
+	private ArrayList<TrialData> trialDataList;
 	
 	private int numPoints = 0;
 	private int numAnchorPoints = 0;
