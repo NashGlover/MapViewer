@@ -6,6 +6,7 @@ import edu.utk.imaging.mapviewer.data.TrialData;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -29,6 +30,9 @@ import java.util.Stack;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import org.jfree.chart.ChartFactory;
@@ -140,7 +144,7 @@ public class PlotWindow extends JFrame {
         plot.setBackgroundPaint(null);
         
 		chartPanel = new ChartPanel(chart) {
-        	@Override
+			@Override
             public Dimension getPreferredSize() {
                 return new Dimension(600, 600);
             }
@@ -180,15 +184,7 @@ public class PlotWindow extends JFrame {
         loadFileButton.addActionListener(new ActionListener() {
         	@Override
         	public void actionPerformed(ActionEvent evt) {
-        		JFileChooser pointFileChooser = new JFileChooser();
-        		File pointFile = null;
-        		
-        		int returnVal = pointFileChooser.showOpenDialog(null);
-        		
-        		if (returnVal == JFileChooser.APPROVE_OPTION) {
-        			pointFile = pointFileChooser.getSelectedFile();
-        			readFile(pointFile);
-        		}
+        		openFile();
         	}
         });
         
@@ -198,10 +194,12 @@ public class PlotWindow extends JFrame {
 		p.add(loadFileButton);
 		mainPanel = new JPanel();
 		mainPanel.setBackground(new Color(255, 255, 255));
-		mainPanel.add(chartPanel);
+		mainPanel.add(chartPanel, BorderLayout.CENTER);
 		add(mainPanel, BorderLayout.CENTER);
-		add(p, BorderLayout.SOUTH);
+		//add(p, BorderLayout.SOUTH);
+		addMenuBar();
 		pack();
+		setLocationRelativeTo(null);
 		
 		final double bottomPanelHeight = p.getSize().getHeight();
 		
@@ -214,6 +212,35 @@ public class PlotWindow extends JFrame {
 			}
 		});
 		
+	}
+	
+	private void addMenuBar() {
+		JMenuBar menuBar = new JMenuBar();
+		JMenu file = new JMenu("File");
+		JMenuItem openFile = new JMenuItem("Open File...");
+		openFile.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				openFile();
+			}
+			
+		});
+		file.add(openFile);
+		menuBar.add(file);
+		setJMenuBar(menuBar);
+	}
+	
+	private void openFile() {
+		JFileChooser pointFileChooser = new JFileChooser();
+		File pointFile = null;
+		
+		int returnVal = pointFileChooser.showOpenDialog(null);
+		
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			pointFile = pointFileChooser.getSelectedFile();
+			readFile(pointFile);
+		}
 	}
 	
 	public void resizePanel(Double minDimension) {
