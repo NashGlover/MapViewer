@@ -117,6 +117,7 @@ public class PlotWindow extends JFrame {
 	}
 	
 	private void initComponents() {
+		trialDataList = new ArrayList<TrialData>(10);
 		f = this;
 		JButton loadFileButton = new JButton("Load File...");
 		MouseEvent evt;
@@ -240,6 +241,8 @@ public class PlotWindow extends JFrame {
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			pointFile = pointFileChooser.getSelectedFile();
 			readFile(pointFile);
+			System.out.println("Size of trialDataList = " + trialDataList.size());
+			plotPoints(trialDataList.get(trialDataList.size()-1));
 		}
 	}
 	
@@ -252,8 +255,10 @@ public class PlotWindow extends JFrame {
 	}
 	
 	private void readFile(File pointFile) {
+		TrialData trial = new TrialData();
 		BufferedReader inputReader;
 		Scanner lineScanner;
+		
 		try {
 			inputReader = new BufferedReader(new FileReader(pointFile));
 			lineScanner = new Scanner(inputReader.readLine());
@@ -270,8 +275,8 @@ public class PlotWindow extends JFrame {
 					Double z = lineScanner.nextDouble();
 
 					Coordinate coordinate = new Coordinate(x, y, z);
-					addAnchorPoint(coordinate);
-					
+					//addAnchorPoint(coordinate);
+					trial.addAnchorPoint(coordinate);
 					//i++;
 				//}
 				lineScanner = new Scanner(inputReader.readLine());
@@ -294,7 +299,8 @@ public class PlotWindow extends JFrame {
 				else {
 					coordinate = new Coordinate(x, y, z);
 				}
-				addAnchorlessPoint(coordinate);
+				//addAnchorlessPoint(coordinate);
+				trial.addAnchorlessPoint(coordinate);
 				lineScanner = new Scanner(inputReader.readLine());
 			}
 			
@@ -321,7 +327,8 @@ public class PlotWindow extends JFrame {
 						else {
 							coordinate = new Coordinate(x, y, z);
 						}
-						addPoint(coordinate);
+						//addPoint(coordinate);
+						trial.addAnchoredPoint(coordinate);
 					} else {
 						System.out.println("There isn't a double.");
 						System.out.println("Current line: " + currentLine);
@@ -336,13 +343,14 @@ public class PlotWindow extends JFrame {
 							Coordinate coordinate;
 							if (lineScanner.hasNextDouble()) {
 								Double timestamp = lineScanner.nextDouble();
-								coordinate = new Coordinate(x, y, z, timestamp);
+								coordinate = new Coordinate(x, y, z, timestamp, false);
 							}
 							else {
 								coordinate = new Coordinate(x, y, z);
+								coordinate.setAnchor();
 							}
 							
-							atAnchorPoint(coordinate);
+							trial.addAnchoredPoint(coordinate);
 						}
 					}
 					System.out.println("Before the lineScanner");
@@ -368,6 +376,7 @@ public class PlotWindow extends JFrame {
 		} catch (FileNotFoundException fne) {
 		} catch (IOException ioe) {
 		}
+		trialDataList.add(trial);
 	}
 	
 	public void zoomIn() {
@@ -541,6 +550,30 @@ public class PlotWindow extends JFrame {
     	
     	anchorlessLastCoordinate = new Coordinate(coordinate.getX(), coordinate.getY(), coordinate.getZ());
     	numAnchorlessPoints++;
+    }
+    
+    public void plotPoints (TrialData data) {
+    	System.out.println("In plotPoints");
+    	System.out.println(data.getAnchorPoints().size());
+    	
+    	for (Coordinate coordinate : data.getAnchorPoints()) {
+    		System.out.println("Anchor point");
+    		//if (coordinate.getAnchor()) {
+    			//setAnchor(coordinate);
+    		//} else {
+    			addAnchorPoint(coordinate);
+    		//}
+    	}
+    	System.out.println("Add anchorless points: " + data.getAnchorlessPoints().size());
+    	for (Coordinate coordinate : data.getAnchorlessPoints()) {
+    		System.out.println("Add anchorlessPoint");
+    		addAnchorlessPoint(coordinate);
+    	}
+    	
+    	for (Coordinate coordinate : data.getAnchoredPoints()) {
+    		addPoint(coordinate);
+    	}
+    	
     }
     
     public void addAnchorPoint(Coordinate coordinate) {

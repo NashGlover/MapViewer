@@ -42,7 +42,7 @@ public class TrialData {
 	}
 	
 	public void addAnchorPoint(Coordinate _coordinate) {
-		anchoredPoints.add(_coordinate);
+		anchorPoints.add(_coordinate);
 	}
 	
 }
