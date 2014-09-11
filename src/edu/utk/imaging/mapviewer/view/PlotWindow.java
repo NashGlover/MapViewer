@@ -28,6 +28,7 @@ import java.util.Scanner;
 import java.util.Stack;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -197,6 +198,10 @@ public class PlotWindow extends JFrame {
 		mainPanel.setBackground(new Color(255, 255, 255));
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 		add(mainPanel, BorderLayout.CENTER);
+		
+		JComboBox trialSelect = new JComboBox();
+		add(trialSelect, BorderLayout.SOUTH);
+		
 		//add(p, BorderLayout.SOUTH);
 		addMenuBar();
 		pack();

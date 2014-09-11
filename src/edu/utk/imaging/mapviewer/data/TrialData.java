@@ -8,10 +8,11 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 public class TrialData {
 	
-	XYDataset xyDataset;
-	ArrayList<Coordinate> anchoredPoints;
-	ArrayList<Coordinate> anchorlessPoints;
-	ArrayList<Coordinate> anchorPoints;
+	private XYDataset xyDataset;
+	private ArrayList<Coordinate> anchoredPoints;
+	private ArrayList<Coordinate> anchorlessPoints;
+	private ArrayList<Coordinate> anchorPoints;
+	private String name = null;
 	
 	
 	public TrialData() {
