@@ -11,6 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -23,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
@@ -87,7 +90,7 @@ public class PlotWindow extends JFrame {
 	private ArrayList<Color> colorList;
 	private JFrame f;
 	
-	private ArrayList<TrialData> trialDataList;
+	private HashMap<String, TrialData> trialDataList;
 	
 	private int numPoints = 0;
 	private int numAnchorPoints = 0;
@@ -126,7 +129,7 @@ public class PlotWindow extends JFrame {
 	private void initComponents() {
 		this.setTitle("MapViewer");
 		trialNames = new Vector<String>(10);
-		trialDataList = new ArrayList<TrialData>(10);
+		trialDataList = new HashMap<String, TrialData>(10);
 		f = this;
 		JButton loadFileButton = new JButton("Load File...");
 		MouseEvent evt;
@@ -207,8 +210,20 @@ public class PlotWindow extends JFrame {
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 		add(mainPanel, BorderLayout.CENTER);
 		
-		trialSelect = new JComboBox(trialNames);
+		trialSelect = new JComboBox();
 		add(trialSelect, BorderLayout.SOUTH);
+		trialSelect.addItemListener(new ItemListener() {
+
+			@Override
+			public void itemStateChanged(ItemEvent event) {
+				if (event.getStateChange() == ItemEvent.SELECTED) {
+					Object item = event.getItem();
+					String selectedName = item.toString();
+					plotPoints(trialDataList.get(selectedName));
+				}
+			}
+			
+		});
 		
 		//add(p, BorderLayout.SOUTH);
 		addMenuBar();
@@ -232,15 +247,26 @@ public class PlotWindow extends JFrame {
 		JMenuBar menuBar = new JMenuBar();
 		JMenu file = new JMenu("File");
 		JMenuItem openFile = new JMenuItem("Open File...");
+		JMenuItem openFolder = new JMenuItem("Open Folder...");
+		
 		openFile.addActionListener(new ActionListener() {
 
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(ActionEvent event) {
 				openFile();
 			}
 			
 		});
+		
+		openFolder.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				openFolder();
+			}
+		});
 		file.add(openFile);
+		file.add(openFolder);
 		menuBar.add(file);
 		setJMenuBar(menuBar);
 	}
@@ -255,7 +281,30 @@ public class PlotWindow extends JFrame {
 			pointFile = pointFileChooser.getSelectedFile();
 			readFile(pointFile);
 			System.out.println("Size of trialDataList = " + trialDataList.size());
-			plotPoints(trialDataList.get(trialDataList.size()-1));
+			plotPoints(trialDataList.get(pointFile.getName()));
+		}
+	}
+	
+	private void openFolder() {
+		JFileChooser pointFileChooser = new JFileChooser();
+		File pointFolder = null;
+		
+		//pointFileChooser.setCurrentDirectory(new File("."));
+		pointFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		pointFileChooser.setAcceptAllFileFilterUsed(false);
+		
+		if (pointFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			pointFolder = pointFileChooser.getSelectedFile();
+			System.out.println("pointFolder = " + pointFolder.toString());
+			File[] listOfFiles = pointFolder.listFiles();
+			for (int i = 0; i < listOfFiles.length; i++) {
+				String fileName = listOfFiles[i].getName();
+				if (listOfFiles[i].isFile() && fileName.substring(fileName.length()-7).equals(".maplog")) {
+					System.out.println("File " + fileName);
+					System.out.println("Substring = " + fileName.substring(fileName.length()-7));
+					readFile(listOfFiles[i]);
+				}
+			}
 		}
 	}
 	
@@ -268,21 +317,6 @@ public class PlotWindow extends JFrame {
 	}
 	
 	private void readFile(File pointFile) {
-		xyDataset = null;
-		anchorlessXYDataset = null;
-		numPoints = 0;
-		numAnchorlessPoints = 0;
-		numAnchorPoints = 0;
-		i = 0;
-		
-		XYItemRenderer clearRenderer = new XYLineAndShapeRenderer();
-		XYDataset clearDataset = new XYSeriesCollection();
-		plot.clearAnnotations();
-		//plot.setRenderer(0, clearRenderer);
-		//plot.setRenderer(1, clearRenderer);
-		plot.setDataset(0, clearDataset);
-		plot.setDataset(1, clearDataset);
-		
 		TrialData trial = new TrialData(pointFile.getName());
 		BufferedReader inputReader;
 		Scanner lineScanner;
@@ -404,12 +438,13 @@ public class PlotWindow extends JFrame {
 		} catch (FileNotFoundException fne) {
 		} catch (IOException ioe) {
 		}
-		trialDataList.add(trial);
+		trialDataList.put(trial.getName(), trial);
 		trialNames.add(trial.getName());
 		trialAdded(trial);
 	}
 	
 	public void trialAdded(TrialData trial) {
+		trialSelect.addItem(trial.getName());
 		trialSelect.setSelectedIndex(trialNames.size()-1);
 	}
 	
@@ -504,6 +539,8 @@ public class PlotWindow extends JFrame {
         	XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(0);
         	plot.getRenderer(0).setSeriesPaint(i, Color.BLUE);
         	plot.getRenderer(0).setSeriesShape(i, new Ellipse2D.Double(-3.5, -3.5, 7, 7));
+        	renderer.setBaseLinesVisible(false);
+    		renderer.setBaseShapesVisible(true);
         	renderer.setSeriesShapesVisible(i, true);
         	//plot.getRenderer().setSeriesShape(i, ShapeUtilities.createDiagonalCross(1, 1));
     	}
@@ -519,6 +556,8 @@ public class PlotWindow extends JFrame {
     		newSeries.add(lastCoordinate.getX(), lastCoordinate.getY());
     		newSeries.add(coordinate.getX(), coordinate.getY());
     		plot.getRenderer(0).setSeriesPaint(i, Color.RED);
+    		plot.getRenderer(0).setSeriesVisible(i, true);
+    		plot.getRenderer(0).setSeriesShape(i, ShapeUtilities.createRegularCross(3, .2f));
     		//plot.getRenderer().setSeriesPaint(i+1, Color.RED);	
     		XYSeriesCollection newDataset = (XYSeriesCollection) xyDataset;
     		newDataset.addSeries(newSeries);
@@ -547,8 +586,8 @@ public class PlotWindow extends JFrame {
         		System.out.println("AnchorlessXYDataset == null");
         		anchorlessXYDataset = new XYSeriesCollection(newSeries);
         		XYLineAndShapeRenderer anchorlessRenderer = new XYLineAndShapeRenderer();
-        		anchorlessRenderer.setBaseShapesVisible(false);
-        		anchorlessRenderer.setBaseLinesVisible(true);
+        		anchorlessRenderer.setBaseShapesVisible(true);
+        		anchorlessRenderer.setBaseLinesVisible(false);
         		plot.setRenderer(1, anchorlessRenderer);
         		plot.setDataset(1, anchorlessXYDataset);
         	}
@@ -579,9 +618,9 @@ public class PlotWindow extends JFrame {
     	XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(1);
     	System.out.println("After the renderer");
     	plot.getRenderer(1).setSeriesPaint(numAnchorlessPoints, Color.BLUE);
-    	plot.getRenderer(1).setSeriesShape(numAnchorlessPoints, new Ellipse2D.Double(-3.5, -3.5, 7, 7));
+    	plot.getRenderer(1).setSeriesShape(numAnchorlessPoints, ShapeUtilities.createRegularCross(3, .2f));
     	System.out.println("Num Anchorless Points: " + numAnchorlessPoints);
-    	renderer.setSeriesShapesVisible(numAnchorlessPoints, false);
+    	//renderer.setSeriesShapesVisible(numAnchorlessPoints, true);
     	System.out.println("After setSeriesShapesVisible");
     	//plot.getRenderer(1).setSeriesShape(i, ShapeUtilities.createDiagonalCross(1, 1));
     	
@@ -590,6 +629,21 @@ public class PlotWindow extends JFrame {
     }
     
     public void plotPoints (TrialData data) {
+    	xyDataset = null;
+		anchorlessXYDataset = null;
+		numPoints = 0;
+		numAnchorlessPoints = 0;
+		numAnchorPoints = 0;
+		i = 0;
+		
+		XYItemRenderer clearRenderer = new XYLineAndShapeRenderer();
+		XYDataset clearDataset = new XYSeriesCollection();
+		plot.clearAnnotations();
+		//plot.setRenderer(0, clearRenderer);
+		//plot.setRenderer(1, clearRenderer);
+		plot.setDataset(0, clearDataset);
+		plot.setDataset(1, clearDataset);
+		
     	System.out.println("In plotPoints");
     	System.out.println(data.getAnchorPoints().size());
     	
@@ -635,13 +689,13 @@ public class PlotWindow extends JFrame {
         		newDataset.addSeries(newSeries);
         	}
 	    	//newDataset.addSeries(newSeries);
-        	plot.setDataset(0, xyDataset);
+        	plot.setDataset(2, xyDataset);
     	} else {
 	    	final XYSeries newSeries = new XYSeries(i);
 	    	newSeries.add(coordinate.getX(), coordinate.getY());
 	    	XYSeriesCollection newDataset = (XYSeriesCollection) xyDataset;
 	    	newDataset.addSeries(newSeries);
-	    	plot.setDataset(0, newDataset);
+	    	plot.setDataset(2, newDataset);
     	}
     	i++; 
     	//XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
@@ -654,8 +708,8 @@ public class PlotWindow extends JFrame {
     	System.out.println("After series paint");
     	//renderer.setSeriesShape(i-1, new Ellipse2D.Double(-4, -4, 8, 8));
     	//renderer.setSeriesShape(i-1, ShapeUtilities.rotateShape(ShapeUtilities.createDiagonalCross(100, .1f), 40.055, 0, 0));
-    	renderer.setSeriesShape(i-1, ShapeUtilities.createRegularCross(5, .5f));
-    	plot.setRenderer(0, renderer);
+    	renderer.setSeriesShape(i-1, ShapeUtilities.createRegularCross(7, .7f));
+    	plot.setRenderer(2, renderer);
     	//plot.addAnnotation(new XYTextAnnotation(new Character((char)(anchorChar+(char)numAnchorPoints)).toString(), coordinate.getX()+.5, coordinate.getY()+.5));
     	plot.addAnnotation(new XYTextAnnotation(new Character((char)(anchorChar+(char)numAnchorPoints)).toString(), coordinate.getX()+computePixelWidth(10), -(coordinate.getY()+computePixelHeight(10))));
        	numAnchorPoints++;
