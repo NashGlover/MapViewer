@@ -22,6 +22,14 @@ public class TrialData {
 		anchorPoints = new ArrayList<Coordinate>(200);
 	}
 	
+	public TrialData(String _name) {
+		xyDataset = null;
+		anchoredPoints = new ArrayList<Coordinate>(200);
+		anchorlessPoints = new ArrayList<Coordinate>(200);
+		anchorPoints = new ArrayList<Coordinate>(200);
+		name = _name;
+	}
+	
 	public ArrayList<Coordinate> getAnchoredPoints() {
 		return anchoredPoints;
 	}
@@ -44,6 +52,10 @@ public class TrialData {
 	
 	public void addAnchorPoint(Coordinate _coordinate) {
 		anchorPoints.add(_coordinate);
+	}
+	
+	public String getName() {
+		return name;
 	}
 	
 }

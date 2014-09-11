@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
+import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -102,6 +103,10 @@ public class PlotWindow extends JFrame {
 	private XYTextAnnotation anchorlessTextAnnotation;
 	private XYTextAnnotation anchoredTextAnnotation;
 	
+	private Vector<String> trialNames = null;
+	
+	private JComboBox trialSelect;
+	
 	public PlotWindow() {
 		initComponents();
 	}
@@ -118,6 +123,7 @@ public class PlotWindow extends JFrame {
 	}
 	
 	private void initComponents() {
+		trialNames = new Vector<String>(10);
 		trialDataList = new ArrayList<TrialData>(10);
 		f = this;
 		JButton loadFileButton = new JButton("Load File...");
@@ -199,7 +205,7 @@ public class PlotWindow extends JFrame {
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 		add(mainPanel, BorderLayout.CENTER);
 		
-		JComboBox trialSelect = new JComboBox();
+		trialSelect = new JComboBox(trialNames);
 		add(trialSelect, BorderLayout.SOUTH);
 		
 		//add(p, BorderLayout.SOUTH);
@@ -260,7 +266,13 @@ public class PlotWindow extends JFrame {
 	}
 	
 	private void readFile(File pointFile) {
-		TrialData trial = new TrialData();
+		numPoints = 0;
+		
+		XYDataset clearDataset = new XYSeriesCollection();
+		plot.setDataset(0, clearDataset);
+		plot.setDataset(1, clearDataset);
+		
+		TrialData trial = new TrialData(pointFile.getName());
 		BufferedReader inputReader;
 		Scanner lineScanner;
 		
@@ -382,6 +394,12 @@ public class PlotWindow extends JFrame {
 		} catch (IOException ioe) {
 		}
 		trialDataList.add(trial);
+		//trialNames.add(trial.getName());
+		trialAdded(trial);
+	}
+	
+	public void trialAdded(TrialData trial) {
+		trialSelect.addItem(trial.getName());
 	}
 	
 	public void zoomIn() {
