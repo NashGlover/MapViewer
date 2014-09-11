@@ -56,6 +56,7 @@ import org.jfree.chart.event.PlotChangeEvent;
 import org.jfree.chart.event.PlotChangeListener;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.Range;
 import org.jfree.data.xy.XYDataset;
@@ -83,7 +84,7 @@ public class PlotWindow extends JFrame {
 
 	private Stack<Double> zoomInStack;
 	private Stack<Double> zoomOutStack;
-	private  ArrayList<Color> colorList;
+	private ArrayList<Color> colorList;
 	private JFrame f;
 	
 	private ArrayList<TrialData> trialDataList;
@@ -123,6 +124,7 @@ public class PlotWindow extends JFrame {
 	}
 	
 	private void initComponents() {
+		this.setTitle("MapViewer");
 		trialNames = new Vector<String>(10);
 		trialDataList = new ArrayList<TrialData>(10);
 		f = this;
@@ -266,9 +268,18 @@ public class PlotWindow extends JFrame {
 	}
 	
 	private void readFile(File pointFile) {
+		xyDataset = null;
+		anchorlessXYDataset = null;
 		numPoints = 0;
+		numAnchorlessPoints = 0;
+		numAnchorPoints = 0;
+		i = 0;
 		
+		XYItemRenderer clearRenderer = new XYLineAndShapeRenderer();
 		XYDataset clearDataset = new XYSeriesCollection();
+		plot.clearAnnotations();
+		//plot.setRenderer(0, clearRenderer);
+		//plot.setRenderer(1, clearRenderer);
 		plot.setDataset(0, clearDataset);
 		plot.setDataset(1, clearDataset);
 		
@@ -360,7 +371,7 @@ public class PlotWindow extends JFrame {
 							Coordinate coordinate;
 							if (lineScanner.hasNextDouble()) {
 								Double timestamp = lineScanner.nextDouble();
-								coordinate = new Coordinate(x, y, z, timestamp, false);
+								coordinate = new Coordinate(x, y, z, timestamp, true);
 							}
 							else {
 								coordinate = new Coordinate(x, y, z);
@@ -394,12 +405,12 @@ public class PlotWindow extends JFrame {
 		} catch (IOException ioe) {
 		}
 		trialDataList.add(trial);
-		//trialNames.add(trial.getName());
+		trialNames.add(trial.getName());
 		trialAdded(trial);
 	}
 	
 	public void trialAdded(TrialData trial) {
-		trialSelect.addItem(trial.getName());
+		trialSelect.setSelectedIndex(trialNames.size()-1);
 	}
 	
 	public void zoomIn() {
@@ -499,10 +510,11 @@ public class PlotWindow extends JFrame {
     	else {
     		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(0);
     		if (numPoints >= 2) {
-    			renderer.removeAnnotation(anchoredTextAnnotation);
+    			plot.removeAnnotation(anchoredTextAnnotation);
     		}
     		anchoredTextAnnotation = new XYTextAnnotation("(" + (double)Math.round(coordinate.getX() * 1000) / 1000 + ", " + (double)Math.round(coordinate.getY() * 1000) / 1000 + ")" , coordinate.getX() + .1, coordinate.getY()+ .3);
-    		renderer.addAnnotation(anchoredTextAnnotation);
+    		//renderer.addAnnotation(anchoredTextAnnotation);
+    		plot.addAnnotation(anchoredTextAnnotation);
     		final XYSeries newSeries = new XYSeries(i);
     		newSeries.add(lastCoordinate.getX(), lastCoordinate.getY());
     		newSeries.add(coordinate.getX(), coordinate.getY());
@@ -524,8 +536,9 @@ public class PlotWindow extends JFrame {
     
     public void addAnchorlessPoint(Coordinate coordinate) {
     	System.out.println("In addAnchorlessPoint");
+    	System.out.println("Number of anchorlessPoint: " + numAnchorlessPoints);
     	if (numAnchorlessPoints == 0) {
-    		System.out.println("Origin point");
+    		System.out.println("STARTING: Origin point");
     		final XYSeries newSeries = new XYSeries(numAnchorlessPoints);
     		newSeries.add(coordinate.getX(), coordinate.getY());
         	System.out.println("In addPoint. X: " + coordinate.getX() + " Y: " + coordinate.getY());
@@ -549,10 +562,11 @@ public class PlotWindow extends JFrame {
     	else {
     		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(1);
     		if (numAnchorlessPoints >= 2) {
-    			renderer.removeAnnotation(anchorlessTextAnnotation);
+    			plot.removeAnnotation(anchorlessTextAnnotation);
     		}
     		anchorlessTextAnnotation = new XYTextAnnotation("(" + (double)Math.round(coordinate.getX() * 1000) / 1000 + ", " + (double)Math.round(coordinate.getY() * 1000) / 1000 + ")" , coordinate.getX() + .1, coordinate.getY()+ .3);
-    		renderer.addAnnotation(anchorlessTextAnnotation);
+    		//renderer.addAnnotation(anchorlessTextAnnotation);
+    		plot.addAnnotation(anchorlessTextAnnotation);
     		final XYSeries newSeries = new XYSeries(numAnchorlessPoints);
     		newSeries.add(anchorlessLastCoordinate.getX(), anchorlessLastCoordinate.getY());
     		newSeries.add(coordinate.getX(), coordinate.getY());
@@ -565,11 +579,11 @@ public class PlotWindow extends JFrame {
     	XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(1);
     	System.out.println("After the renderer");
     	plot.getRenderer(1).setSeriesPaint(numAnchorlessPoints, Color.BLUE);
-    	//plot.getRenderer().setSeriesShape(numAnchorlessPoints, new Ellipse2D.Double(-3.5, -3.5, 7, 7));
+    	plot.getRenderer(1).setSeriesShape(numAnchorlessPoints, new Ellipse2D.Double(-3.5, -3.5, 7, 7));
     	System.out.println("Num Anchorless Points: " + numAnchorlessPoints);
     	renderer.setSeriesShapesVisible(numAnchorlessPoints, false);
     	System.out.println("After setSeriesShapesVisible");
-    	//plot.getRenderer().setSeriesShape(i, ShapeUtilities.createDiagonalCross(1, 1));
+    	//plot.getRenderer(1).setSeriesShape(i, ShapeUtilities.createDiagonalCross(1, 1));
     	
     	anchorlessLastCoordinate = new Coordinate(coordinate.getX(), coordinate.getY(), coordinate.getZ());
     	numAnchorlessPoints++;
@@ -594,19 +608,32 @@ public class PlotWindow extends JFrame {
     	}
     	
     	for (Coordinate coordinate : data.getAnchoredPoints()) {
-    		addPoint(coordinate);
+    		if (coordinate.getAnchor()) {
+    			System.out.println("YOU'RE AT AN ANCHOR POINT");
+    			atAnchorPoint(coordinate);
+    		}
+    		else {
+    			addPoint(coordinate);
+    		}
     	}
     	
     }
     
     public void addAnchorPoint(Coordinate coordinate) {
     	System.out.println("In add anchor point.");
-    	if (xyDataset == null) {
+    	System.out.println("numAnchorPoints = " + numAnchorPoints);
+    	if (numAnchorPoints == 0) {
     		final XYSeries newSeries = new XYSeries(i);
     		newSeries.add(coordinate.getX(), coordinate.getY());
         	System.out.println("In addPoint. X: " + coordinate.getX() + " Y: " + coordinate.getY());
         	System.out.println("Size of series: " + series.getItemCount());
-        	xyDataset = new XYSeriesCollection(newSeries);
+        	if (xyDataset == null) {
+        		xyDataset = new XYSeriesCollection(newSeries);
+        	}
+        	else{
+        		XYSeriesCollection newDataset = (XYSeriesCollection) xyDataset;
+        		newDataset.addSeries(newSeries);
+        	}
 	    	//newDataset.addSeries(newSeries);
         	plot.setDataset(0, xyDataset);
     	} else {
@@ -616,7 +643,7 @@ public class PlotWindow extends JFrame {
 	    	newDataset.addSeries(newSeries);
 	    	plot.setDataset(0, newDataset);
     	}
-    	i++;
+    	i++; 
     	//XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
     	XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(0);
     	renderer.setSeriesLinesVisible(i-1, false);
