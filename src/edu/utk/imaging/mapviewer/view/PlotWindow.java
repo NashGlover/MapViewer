@@ -96,6 +96,8 @@ public class PlotWindow extends JFrame {
 	private int numAnchorPoints = 0;
 	private int numAnchorlessPoints = 0;
 	
+	private Coordinate lastAnchorPoint = null;
+	
 	private  double labelWidth;
 	private  double labelHeight;
 	
@@ -549,7 +551,7 @@ public class PlotWindow extends JFrame {
     		if (numPoints >= 2) {
     			plot.removeAnnotation(anchoredTextAnnotation);
     		}
-    		anchoredTextAnnotation = new XYTextAnnotation("(" + (double)Math.round(coordinate.getX() * 1000) / 1000 + ", " + (double)Math.round(coordinate.getY() * 1000) / 1000 + ")" , coordinate.getX() + .1, coordinate.getY()+ .3);
+    		anchoredTextAnnotation = new XYTextAnnotation("(" + (double)Math.round((coordinate.getX()-lastAnchorPoint.getX()) * 1000) / 1000 + ", " + (double)Math.round((coordinate.getY()-lastAnchorPoint.getY()) * 1000) / 1000 + ") = " + (double)Math.round((getDistance(coordinate, lastAnchorPoint)) * 1000) / 1000 , coordinate.getX() + .1, coordinate.getY()+ .3);
     		//renderer.addAnnotation(anchoredTextAnnotation);
     		plot.addAnnotation(anchoredTextAnnotation);
     		final XYSeries newSeries = new XYSeries(i);
@@ -603,7 +605,7 @@ public class PlotWindow extends JFrame {
     		if (numAnchorlessPoints >= 2) {
     			plot.removeAnnotation(anchorlessTextAnnotation);
     		}
-    		anchorlessTextAnnotation = new XYTextAnnotation("(" + (double)Math.round(coordinate.getX() * 1000) / 1000 + ", " + (double)Math.round(coordinate.getY() * 1000) / 1000 + ")" , coordinate.getX() + .1, coordinate.getY()+ .3);
+    		anchorlessTextAnnotation = new XYTextAnnotation("(" + (double)Math.round((coordinate.getX()-lastAnchorPoint.getX()) * 1000) / 1000 + ", " + (double)Math.round((coordinate.getY()-lastAnchorPoint.getY()) * 1000) / 1000 + ") = " + (double)Math.round((getDistance(coordinate, lastAnchorPoint)) * 1000) / 1000 , coordinate.getX() + .1, coordinate.getY()+ .3);
     		//renderer.addAnnotation(anchorlessTextAnnotation);
     		plot.addAnnotation(anchorlessTextAnnotation);
     		final XYSeries newSeries = new XYSeries(numAnchorlessPoints);
@@ -654,6 +656,7 @@ public class PlotWindow extends JFrame {
     		//} else {
     			addAnchorPoint(coordinate);
     		//}
+    			lastAnchorPoint = coordinate;
     	}
     	System.out.println("Add anchorless points: " + data.getAnchorlessPoints().size());
     	for (Coordinate coordinate : data.getAnchorlessPoints()) {
@@ -670,6 +673,7 @@ public class PlotWindow extends JFrame {
     			addPoint(coordinate);
     		}
     	}
+    	System.out.println("last Anchor Point: " + lastAnchorPoint.getX());
     	
     }
     
@@ -769,6 +773,14 @@ public class PlotWindow extends JFrame {
 		Double lengthDelta = ratio*length;
 		
 		range.setRange(range.getLowerBound()-lengthDelta, range.getUpperBound()-lengthDelta);
+	}
+	
+	private double getDistance(Coordinate coordinate1, Coordinate coordinate2) {
+		return Math.sqrt(Math.pow(coordinate2.getX() - coordinate1.getX(), 2) + Math.pow(coordinate2.getY() - coordinate1.getY(), 2));
+	}
+	
+	private double roundPoint(double number) {
+		return (double)Math.round(number) * 1000 / 1000;
 	}
     
 private class GraphMouseListeners extends MouseAdapter {
