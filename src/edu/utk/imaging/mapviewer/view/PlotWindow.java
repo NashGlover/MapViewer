@@ -637,6 +637,12 @@ public class PlotWindow extends JFrame {
 		numAnchorlessPoints = 0;
 		numAnchorPoints = 0;
 		i = 0;
+		Double minX = null;
+		Double minY = null;
+		Double maxX = null;
+		Double maxY = null;
+		
+		Boolean first = true;
 		
 		XYItemRenderer clearRenderer = new XYLineAndShapeRenderer();
 		XYDataset clearDataset = new XYSeriesCollection();
@@ -657,11 +663,39 @@ public class PlotWindow extends JFrame {
     			addAnchorPoint(coordinate);
     		//}
     			lastAnchorPoint = coordinate;
+    			if (first) {
+    				first = false;
+    				minX = coordinate.getX();
+    				maxX = coordinate.getX();
+    				minY = coordinate.getY();
+    				maxY = coordinate.getY();
+    			}
+    			else {
+    				if (coordinate.getX() > maxX) { maxX = coordinate.getX(); }
+    				else if (coordinate.getX() < minX) { minX = coordinate.getX(); }
+    				if (coordinate.getY() > maxY) { maxY = coordinate.getY(); }
+    				else if (coordinate.getY() < minY) { minY = coordinate.getY(); }
+    			}
     	}
     	System.out.println("Add anchorless points: " + data.getAnchorlessPoints().size());
     	for (Coordinate coordinate : data.getAnchorlessPoints()) {
     		System.out.println("Add anchorlessPoint");
     		addAnchorlessPoint(coordinate);
+    		
+    		if (first) {
+				first = false;
+				minX = coordinate.getX();
+				maxX = coordinate.getX();
+				minY = coordinate.getY();
+				maxY = coordinate.getY();
+			}
+			else {
+				if (coordinate.getX() > maxX) { maxX = coordinate.getX(); }
+				else if (coordinate.getX() < minX) { minX = coordinate.getX(); }
+				if (coordinate.getY() > maxY) { maxY = coordinate.getY(); }
+				else if (coordinate.getY() < minY) { minY = coordinate.getY(); }
+			}
+    		
     	}
     	
     	for (Coordinate coordinate : data.getAnchoredPoints()) {
@@ -672,9 +706,45 @@ public class PlotWindow extends JFrame {
     		else {
     			addPoint(coordinate);
     		}
+    		
+    		if (first) {
+				first = false;
+				minX = coordinate.getX();
+				maxX = coordinate.getX();
+				minY = coordinate.getY();
+				maxY = coordinate.getY();
+			}
+			else {
+				if (coordinate.getX() > maxX) { maxX = coordinate.getX(); }
+				else if (coordinate.getX() < minX) { minX = coordinate.getX(); }
+				if (coordinate.getY() > maxY) { maxY = coordinate.getY(); }
+				else if (coordinate.getY() < minY) { minY = coordinate.getY(); }
+			}
+    		
     	}
-    	System.out.println("last Anchor Point: " + lastAnchorPoint.getX());
     	
+    	/* 
+    	 * All points are on the screen. Now correct the ranges of the axes
+    	 * so that they include all points.
+    	 */
+    	
+    	double rangeX = maxX-minX;
+    	double rangeY = maxY-minY;
+    	
+    	if (rangeX > rangeY) {
+    		double remainder = (rangeX-rangeY)/2;
+    		domain.setRange(minX,maxX);
+    		range.setRange(minY-remainder, maxY+remainder);
+    	}
+    	else {
+    		double remainder = (rangeY-rangeX)/2;
+    		domain.setRange(minX-remainder, maxX+remainder);
+    		range.setRange(minY, maxY);
+    	}
+    	
+    	System.out.println("last Anchor Point: " + lastAnchorPoint.getX());
+    	System.out.println("THE MAX X: " + maxX);
+    	System.out.println("THE MIN X: " + minX);
     }
     
     public void addAnchorPoint(Coordinate coordinate) {
