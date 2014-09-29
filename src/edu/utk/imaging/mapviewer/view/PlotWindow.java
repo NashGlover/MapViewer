@@ -31,6 +31,7 @@ import java.util.Scanner;
 import java.util.Stack;
 import java.util.Vector;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -70,6 +71,7 @@ import org.jfree.util.ShapeUtilities;
 public class PlotWindow extends JFrame {
 
 	private JPanel mainPanel;
+	private EastPanel eastPanel;
 	
 	private  final Random random = new Random();
 	private  XYSeries series = new XYSeries("Test");
@@ -161,7 +163,7 @@ public class PlotWindow extends JFrame {
 		chartPanel = new ChartPanel(chart) {
 			@Override
             public Dimension getPreferredSize() {
-                return new Dimension(600, 600);
+                return new Dimension(700, 700);
             }
         };
         
@@ -211,6 +213,11 @@ public class PlotWindow extends JFrame {
 		mainPanel.setBackground(new Color(255, 255, 255));
 		mainPanel.add(chartPanel, BorderLayout.CENTER);
 		add(mainPanel, BorderLayout.CENTER);
+		eastPanel = new EastPanel();
+		//eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.Y_AXIS));
+		add(eastPanel, BorderLayout.EAST);
+		
+		
 		
 		trialSelect = new JComboBox();
 		add(trialSelect, BorderLayout.SOUTH);
@@ -448,6 +455,7 @@ public class PlotWindow extends JFrame {
 	public void trialAdded(TrialData trial) {
 		trialSelect.addItem(trial.getName());
 		trialSelect.setSelectedIndex(trialNames.size()-1);
+		eastPanel.addTrial(trial);
 	}
 	
 	public void zoomIn() {
@@ -518,7 +526,7 @@ public class PlotWindow extends JFrame {
 		domain = (NumberAxis) plot.getDomainAxis();
 	}
 	
-    public  void addPoint(Coordinate coordinate) {
+    public  void addPoint(Coordinate coordinate, Boolean last) {
     	// Origin point
     	System.out.println("Coordinate x in addPoint: " + coordinate.getX());
     	System.out.println("In add point");
@@ -559,8 +567,11 @@ public class PlotWindow extends JFrame {
     		newSeries.add(coordinate.getX(), coordinate.getY());
     		plot.getRenderer(0).setSeriesPaint(i, Color.RED);
     		plot.getRenderer(0).setSeriesVisible(i, true);
-    		plot.getRenderer(0).setSeriesShape(i, ShapeUtilities.createRegularCross(3, .2f));
-    		//plot.getRenderer().setSeriesPaint(i+1, Color.RED);	
+    		if (!last)
+    			plot.getRenderer(0).setSeriesShape(i, ShapeUtilities.createRegularCross(3, .2f));
+    		else
+    			plot.getRenderer(0).setSeriesShape(i, ShapeUtilities.createRegularCross(10, .5f));
+
     		XYSeriesCollection newDataset = (XYSeriesCollection) xyDataset;
     		newDataset.addSeries(newSeries);
     		plot.setDataset(0, newDataset);
@@ -575,7 +586,7 @@ public class PlotWindow extends JFrame {
     	i++;
     }
     
-    public void addAnchorlessPoint(Coordinate coordinate) {
+    public void addAnchorlessPoint(Coordinate coordinate, Boolean last) {
     	System.out.println("In addAnchorlessPoint");
     	System.out.println("Number of anchorlessPoint: " + numAnchorlessPoints);
     	if (numAnchorlessPoints == 0) {
@@ -620,7 +631,10 @@ public class PlotWindow extends JFrame {
     	XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer(1);
     	System.out.println("After the renderer");
     	plot.getRenderer(1).setSeriesPaint(numAnchorlessPoints, Color.BLUE);
-    	plot.getRenderer(1).setSeriesShape(numAnchorlessPoints, ShapeUtilities.createRegularCross(3, .2f));
+    	if (!last)
+    		plot.getRenderer(1).setSeriesShape(numAnchorlessPoints, ShapeUtilities.createRegularCross(3, .2f));
+    	else
+    		plot.getRenderer(1).setSeriesShape(numAnchorlessPoints, ShapeUtilities.createRegularCross(3, .5f));
     	System.out.println("Num Anchorless Points: " + numAnchorlessPoints);
     	//renderer.setSeriesShapesVisible(numAnchorlessPoints, true);
     	System.out.println("After setSeriesShapesVisible");
@@ -655,13 +669,12 @@ public class PlotWindow extends JFrame {
     	System.out.println("In plotPoints");
     	System.out.println(data.getAnchorPoints().size());
     	
+    	int i = 0;
+    	int size = data.getAnchorPoints().size();
+    	
     	for (Coordinate coordinate : data.getAnchorPoints()) {
     		System.out.println("Anchor point");
-    		//if (coordinate.getAnchor()) {
-    			//setAnchor(coordinate);
-    		//} else {
     			addAnchorPoint(coordinate);
-    		//}
     			lastAnchorPoint = coordinate;
     			if (first) {
     				first = false;
@@ -676,11 +689,12 @@ public class PlotWindow extends JFrame {
     				if (coordinate.getY() > maxY) { maxY = coordinate.getY(); }
     				else if (coordinate.getY() < minY) { minY = coordinate.getY(); }
     			}
+    			i++;
     	}
     	System.out.println("Add anchorless points: " + data.getAnchorlessPoints().size());
     	for (Coordinate coordinate : data.getAnchorlessPoints()) {
     		System.out.println("Add anchorlessPoint");
-    		addAnchorlessPoint(coordinate);
+    		addAnchorlessPoint(coordinate, false);
     		
     		if (first) {
 				first = false;
@@ -698,13 +712,23 @@ public class PlotWindow extends JFrame {
     		
     	}
     	
+    	i = 0;
+    	size = data.getAnchoredPoints().size();
+    	
+    	System.out.println("Size of anchor point: " + size);
+    	
     	for (Coordinate coordinate : data.getAnchoredPoints()) {
     		if (coordinate.getAnchor()) {
-    			System.out.println("YOU'RE AT AN ANCHOR POINT");
     			atAnchorPoint(coordinate);
     		}
     		else {
-    			addPoint(coordinate);
+    			System.out.println("i = " + i);
+    			if (i == (size-1)) {
+    				addPoint(coordinate, true);
+    				System.out.println("It's the last point!");
+    			}
+    			else
+    				addPoint(coordinate, false);
     		}
     		
     		if (first) {
@@ -720,7 +744,7 @@ public class PlotWindow extends JFrame {
 				if (coordinate.getY() > maxY) { maxY = coordinate.getY(); }
 				else if (coordinate.getY() < minY) { minY = coordinate.getY(); }
 			}
-    		
+    		i++;
     	}
     	
     	/* 

@@ -28,6 +28,7 @@ public class TrialData {
 		anchorlessPoints = new ArrayList<Coordinate>(200);
 		anchorPoints = new ArrayList<Coordinate>(200);
 		name = _name;
+		System.out.println("NAME OF TRIAL DATA: " + _name);
 	}
 	
 	public ArrayList<Coordinate> getAnchoredPoints() {
