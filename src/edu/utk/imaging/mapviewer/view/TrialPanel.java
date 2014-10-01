@@ -31,7 +31,7 @@ public class TrialPanel extends JPanel {
 	    	@Override
 	    	public void mouseClicked(MouseEvent e) {
 	    		System.out.println("Clicked");
-	    		//trialPanelList.clicked()
+	    		trialPanelList.clicked(index);
 	    		//changeColorBlue();
 	    	}
 
