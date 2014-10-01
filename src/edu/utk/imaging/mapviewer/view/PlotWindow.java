@@ -209,11 +209,11 @@ public class PlotWindow extends JFrame {
 		Rectangle2D plotArea = chartPanel.getChartRenderingInfo().getPlotInfo().getDataArea();
 		JPanel p = new JPanel();
 		p.add(loadFileButton);
-		mainPanel = new JPanel();
-		mainPanel.setBackground(new Color(255, 255, 255));
-		mainPanel.add(chartPanel, BorderLayout.CENTER);
-		add(mainPanel, BorderLayout.CENTER);
-		eastPanel = new EastPanel();
+		//mainPanel = new JPanel();
+		//mainPanel.setBackground(new Color(255, 255, 255));
+		//mainPanel.add(chartPanel, BorderLayout.CENTER);
+		add(chartPanel, BorderLayout.CENTER);
+		eastPanel = new EastPanel(this);
 		//eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.Y_AXIS));
 		add(eastPanel, BorderLayout.EAST);
 		
@@ -244,9 +244,14 @@ public class PlotWindow extends JFrame {
 		addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
 				Dimension frameSize = f.getContentPane().getSize();
-				double minDimension = Math.min(frameSize.getWidth(), frameSize.getHeight()-bottomPanelHeight);
+				Double minDimension = Math.min(frameSize.getWidth()-300, frameSize.getHeight()-bottomPanelHeight);
+				System.out.println("MIN SIZE: " + minDimension);
 				System.out.println(minDimension);
 				resizePanel(minDimension);
+				//chartPanel.setPreferredSize(new Dimension(minDimension.intValue(), minDimension.intValue()));
+				//pack();
+				//validate();
+				//repaint();
 			}
 		});
 		
@@ -644,7 +649,12 @@ public class PlotWindow extends JFrame {
     	numAnchorlessPoints++;
     }
     
-    public void plotPoints (TrialData data) {
+    public void plotPoints(String listName) {
+    	System.out.println("In the second plotPoints");
+    	plotPoints(trialDataList.get(listName));
+    }
+    
+    public void plotPoints(TrialData data) {
     	xyDataset = null;
 		anchorlessXYDataset = null;
 		numPoints = 0;

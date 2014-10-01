@@ -7,6 +7,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -16,7 +17,13 @@ import edu.utk.imaging.mapviewer.data.TrialData;
 
 public class TrialPanelList extends JPanel{
 
-	TrialPanelList() {
+	int count = 1;
+	
+	PlotWindow window;
+	ArrayList<TrialPanel> trialPanelList = new ArrayList<TrialPanel>(10);
+	
+	TrialPanelList(PlotWindow _window) {
+		window = _window;
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -39,50 +46,25 @@ public class TrialPanelList extends JPanel{
         repaint();
 	}
 
+	public void clicked(Integer index) {
+		
+	}
+	
 	public void addTrial(TrialData trial) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout());
-        panel.add(new JLabel(trial.getName()), BorderLayout.CENTER);
-        panel.add(new JLabel("Hello"), BorderLayout.SOUTH);
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
+		System.out.println(trial.getName());
+		TrialPanel trialPanel = new TrialPanel(this, count, trial);
+		trialPanelList.add(trialPanel);
         GridBagConstraints gbc2 = new GridBagConstraints();
         gbc2.gridwidth = GridBagConstraints.REMAINDER;
         gbc2.weightx = 1;
         gbc2.fill = GridBagConstraints.HORIZONTAL;
+        final String trialName = trial.getName();
         
-        panel.addMouseListener(new MouseListener() {
-        	
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-        		System.out.println("Clicked");
-        	}
-
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-        });
-        
-        add(panel, gbc2, 1);
+        add(trialPanel, gbc2, count);
+        count++;
+	}
+	
+	public void test() {
+		
 	}
 }

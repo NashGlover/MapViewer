@@ -59,4 +59,8 @@ public class TrialData {
 		return name;
 	}
 	
+	public int getSteps() {
+		return anchorlessPoints.size();
+	}
+	
 }

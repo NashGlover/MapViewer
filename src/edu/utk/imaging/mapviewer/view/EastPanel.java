@@ -13,9 +13,9 @@ public class EastPanel extends JPanel {
 	
 	TrialPanelList trialPanelList;
 	
-	public EastPanel() {
+	public EastPanel(PlotWindow window) {
 		setLayout(new BorderLayout());
-		trialPanelList = new TrialPanelList();
+		trialPanelList = new TrialPanelList(window);
 		add(new JScrollPane(trialPanelList));
 		setBackground(Color.WHITE);
 	}
