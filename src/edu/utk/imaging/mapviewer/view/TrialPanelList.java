@@ -22,6 +22,8 @@ public class TrialPanelList extends JPanel{
 	PlotWindow window;
 	ArrayList<TrialPanel> trialPanelList = new ArrayList<TrialPanel>(10);
 	
+	int currentIndex = -1;
+	
 	TrialPanelList(PlotWindow _window) {
 		window = _window;
 		setLayout(new GridBagLayout());
@@ -46,8 +48,14 @@ public class TrialPanelList extends JPanel{
         repaint();
 	}
 
-	public void clicked(Integer index) {
-		
+	public void clicked(String name, Integer index) {
+		window.plotPoints(name);
+		if (currentIndex != -1) {
+			trialPanelList.get(currentIndex).setNotClickedState();
+		}
+		System.out.println(index);
+		trialPanelList.get(index).setClickedState();
+		currentIndex = index;
 	}
 	
 	public void addTrial(TrialData trial) {

@@ -17,13 +17,20 @@ public class TrialPanel extends JPanel {
 	TrialPanelList trialPanelList;
 	TrialData trialData;
 	
+	JLabel nameLabel;
+	JLabel stepsLabel;
+	
 	TrialPanel(TrialPanelList _trialPanelList, Integer _index, TrialData _trialData) {
 		System.out.println("Add trial panel");
+		index = _index - 1;
 		trialPanelList = _trialPanelList;
 		trialData = _trialData;
 		setLayout(new BorderLayout());
-        add(new JLabel(trialData.getName()), BorderLayout.CENTER);
-        add(new JLabel("Steps: " + String.valueOf(trialData.getSteps())), BorderLayout.SOUTH);
+        //add(new JLabel(trialData.getName()), BorderLayout.CENTER);
+        nameLabel = new JLabel(trialData.getName());
+        stepsLabel = new JLabel("Steps: " + String.valueOf(trialData.getSteps()));
+        add(nameLabel, BorderLayout.CENTER);
+		add(stepsLabel, BorderLayout.SOUTH);
         setBackground(Color.WHITE);
         setBorder(new MatteBorder(0, 0, 1, 0, Color.GRAY));
 		
@@ -31,7 +38,7 @@ public class TrialPanel extends JPanel {
 	    	@Override
 	    	public void mouseClicked(MouseEvent e) {
 	    		System.out.println("Clicked");
-	    		trialPanelList.clicked(index);
+	    		trialPanelList.clicked(trialData.getName(), index);
 	    		//changeColorBlue();
 	    	}
 
@@ -61,7 +68,23 @@ public class TrialPanel extends JPanel {
 	    });
 	}
 	
+	public void setClickedState() {
+		this.setBackground(Color.BLUE);
+		nameLabel.setForeground(Color.WHITE);
+		stepsLabel.setForeground(Color.WHITE);
+	}
+	
+	public void setNotClickedState() {
+		this.setBackground(Color.WHITE);
+		nameLabel.setForeground(Color.BLACK);
+		stepsLabel.setForeground(Color.BLACK);
+	}
+	
 	public TrialData getTrialData() {
 		return trialData;
+	}
+	
+	public String getName() {
+		return trialData.getName();
 	}
 }
